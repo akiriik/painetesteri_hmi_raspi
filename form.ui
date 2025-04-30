@@ -6,25 +6,173 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
-    <height>600</height>
+    <width>1280</width>
+    <height>720</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Widget</string>
+   <string>Painetestaus</string>
   </property>
-  <widget class="QPushButton" name="pushButton">
+  <property name="styleSheet">
+   <string notr="true">background-color: white;</string>
+  </property>
+  <widget class="QFrame" name="contentFrame">
    <property name="geometry">
     <rect>
-     <x>400</x>
-     <y>270</y>
-     <width>83</width>
-     <height>29</height>
+     <x>0</x>
+     <y>0</y>
+     <width>1280</width>
+     <height>650</height>
     </rect>
    </property>
-   <property name="text">
-    <string>PushButton</string>
+   <property name="frameShape">
+    <enum>QFrame::NoFrame</enum>
    </property>
+   <property name="frameShadow">
+    <enum>QFrame::Raised</enum>
+   </property>
+   <widget class="QLabel" name="mainTitle">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>240</y>
+      <width>1280</width>
+      <height>100</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>42</pointsize>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="text">
+     <string>-PAINETESTAUS-</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QLabel" name="subtitle">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>360</y>
+      <width>1280</width>
+      <height>60</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>28</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>VALMIUSTILASSA</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
+  </widget>
+  <widget class="QFrame" name="navBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>650</y>
+     <width>1280</width>
+     <height>70</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">background-color: white; border-top: 1px solid #dddddd;</string>
+   </property>
+   <property name="frameShape">
+    <enum>QFrame::NoFrame</enum>
+   </property>
+   <property name="frameShadow">
+    <enum>QFrame::Raised</enum>
+   </property>
+   <widget class="QPushButton" name="navButton0">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>0</y>
+      <width>256</width>
+      <height>70</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: #2196F3; color: white; border: none; font-weight: bold; font-size: 18px;</string>
+    </property>
+    <property name="text">
+     <string>ETUSIVU</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="navButton1">
+    <property name="geometry">
+     <rect>
+      <x>256</x>
+      <y>0</y>
+      <width>256</width>
+      <height>70</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: white; color: #555555; border: none; font-weight: bold; font-size: 18px;</string>
+    </property>
+    <property name="text">
+     <string>OHJELMA</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="navButton2">
+    <property name="geometry">
+     <rect>
+      <x>512</x>
+      <y>0</y>
+      <width>256</width>
+      <height>70</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: white; color: #555555; border: none; font-weight: bold; font-size: 18px;</string>
+    </property>
+    <property name="text">
+     <string>TESTAUS</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="navButton3">
+    <property name="geometry">
+     <rect>
+      <x>768</x>
+      <y>0</y>
+      <width>256</width>
+      <height>70</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: white; color: #555555; border: none; font-weight: bold; font-size: 18px;</string>
+    </property>
+    <property name="text">
+     <string>KÄSIKAYTTO</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="navButton4">
+    <property name="geometry">
+     <rect>
+      <x>1024</x>
+      <y>0</y>
+      <width>256</width>
+      <height>70</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: white; color: #555555; border: none; font-weight: bold; font-size: 18px;</string>
+    </property>
+    <property name="text">
+     <string>MODBUS</string>
+    </property>
+   </widget>
   </widget>
  </widget>
  <resources/>
