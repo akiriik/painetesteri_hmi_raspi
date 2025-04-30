@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QPushButton, QLabel, QFrame, QSize
+from PyQt5.QtWidgets import QPushButton, QLabel, QFrame
 from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtGui import QFont
 from ui.screens.base_screen import BaseScreen

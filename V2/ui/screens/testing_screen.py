@@ -1,6 +1,7 @@
 import sys
 import os
 from PyQt5.QtWidgets import QLCDNumber, QLabel
+from PyQt5.QtCore import Qt, QThread, pyqtSignal
 from ui.screens.base_screen import BaseScreen
 from utils.pressure_reader import PressureReaderThread
 
