@@ -2,39 +2,70 @@
 import sys
 import os
 
-# ========== KOMMENTOI POIS WINDOWSISSA, PALAUTA RASPILLA ==========
 # Lisää oikea polku moduulille
-# sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "mpx5700"))
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "mpx5700"))
 # tai jos testi1 ja mpx5700 ovat rinnakkaiset kansiot:
 # sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "mpx5700"))
-# ===============================================================
 
-# ========== KOMMENTOI POIS WINDOWSISSA, PALAUTA RASPILLA ==========
-# from DFROBOT_MPX5700 import DFRobot_MPX5700_I2C
-# ===============================================================
 
-# ========== KÄYTÄ VAIN WINDOWSISSA, KOMMENTOI POIS RASPILLA ==========
-# Simuloitu anturi Windows-kehitystä varten
-class MockSensor:
-    def __init__(self, bus=None, addr=None):
-        pass
-        
-    def get_pressure_value_kpa(self, samples=1):
-        import random
-        return random.uniform(90, 110)  # Simuloi painelukemia välillä 90-110 kPa
-        
-    def set_mean_sample_size(self, size):
-        pass
-# ===============================================================
+from DFROBOT_MPX5700 import DFRobot_MPX5700_I2C
 
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QVBoxLayout, QHBoxLayout, QFrame, QStackedWidget
 from PyQt5.QtCore import Qt, QTimer, QThread, pyqtSignal, QSize
 from PyQt5.QtGui import QFont, QKeyEvent
 
+# Uusi import ModbusSerialClient
+from pymodbus.client import ModbusSerialClient
+import time
+
 # Important:
 # You need to run the following command to generate the ui_form.py file
 #     pyuic5 form.ui -o ui_form.py
 from ui_form import Ui_Widget
+
+# Modbus-luokka releiden ohjausta varten
+class ModbusHandler:
+    def __init__(self, port='/dev/ttyUSB0', baudrate=19200):
+        self.port = port
+        self.baudrate = baudrate
+        self.client = None
+        self.connected = False
+        self.setup_modbus()
+        
+    def setup_modbus(self):
+        try:
+            self.client = ModbusSerialClient(
+                port=self.port,
+                baudrate=self.baudrate,
+                bytesize=8,
+                parity='N',
+                stopbits=1,
+                timeout=0.5
+            )
+            self.connected = self.client.connect()
+            print(f"Modbus-yhteys: {'Onnistui' if self.connected else 'Epäonnistui'}")
+        except Exception as e:
+            self.connected = False
+            print(f"Modbus-virhe: {e}")
+            
+    def toggle_relay(self, relay_num, state):
+        if not self.connected:
+            print("Modbus-yhteys ei ole päällä")
+            return False
+            
+        try:
+            # Käytä rekistereitä 18099-18106 releille 1-8
+            register = 18098 + relay_num
+            print(f"Ohjataan relettä {relay_num}, rekisteri {register}, tila {state}")
+            result = self.client.write_register(register, state, slave=1)
+            return bool(result)
+        except Exception as e:
+            print(f"Releen {relay_num} ohjausvirhe: {e}")
+            return False
+    
+    def close(self):
+        if self.client:
+            self.client.close()
 
 # Lisää Widget-luokkaan erillinen säie paineanturin lukemiseen
 class PressureReaderThread(QThread):
@@ -68,6 +99,9 @@ class Widget(QWidget):
         self.ui = Ui_Widget()
         self.ui.setupUi(self)
         
+        # Alusta Modbus-käsittelijä
+        self.modbus = ModbusHandler(port='/dev/ttyUSB0', baudrate=19200)
+        
         # Configure main window
         self.setWindowTitle("Painetestaus")
         
@@ -79,22 +113,14 @@ class Widget(QWidget):
         self.subtitle_font = QFont()
         self.subtitle_font.setPointSize(28)
         
-        # ========== KÄYTÄ VAIN WINDOWSISSA, KOMMENTOI POIS RASPILLA ==========
-        # Käytetään simuloitua anturia Windows-kehityksessä
-        self.mpx5700 = MockSensor()
-        print("Simuloitu paineanturi käytössä")
-        # ===============================================================
-        
-        # ========== KOMMENTOI POIS WINDOWSISSA, PALAUTA RASPILLA ==========
         # Alustetaan paineanturi
-        # try:
-        #     self.mpx5700 = DFRobot_MPX5700_I2C(1, 0x16)
-        #     self.mpx5700.set_mean_sample_size(1)
-        #     print("Paineanturi alustettu onnistuneesti")
-        # except Exception as e:
-        #     print(f"Paineanturin alustusvirhe: {e}")
-        #     self.mpx5700 = None
-        # ===============================================================
+        try:
+            self.mpx5700 = DFRobot_MPX5700_I2C(1, 0x16)
+            self.mpx5700.set_mean_sample_size(1)
+            print("Paineanturi alustettu onnistuneesti")
+        except Exception as e:
+            print(f"Paineanturin alustusvirhe: {e}")
+            self.mpx5700 = None
 
         # Create stacked widget for content pages
         self.stacked_widget = QStackedWidget(self)
@@ -206,13 +232,85 @@ class Widget(QWidget):
         title.setAlignment(Qt.AlignCenter)
         title.setGeometry(0, 50, 1280, 100)
         
-        # Page content placeholder
-        content = QLabel("Käsikäyttöasetukset tulevat tähän", manual_page)
-        content.setFont(self.subtitle_font)
-        content.setAlignment(Qt.AlignCenter)
-        content.setGeometry(0, 200, 1280, 60)
+        # Relay control panel
+        relay_panel = QFrame(manual_page)
+        relay_panel.setGeometry(50, 150, 1180, 400)
+        relay_panel.setStyleSheet("background-color: #f0f0f0; border-radius: 10px;")
+        
+        # Status label for user feedback
+        self.relay_status_label = QLabel("Rele-ohjaukset", manual_page)
+        self.relay_status_label.setFont(QFont("Arial", 14))
+        self.relay_status_label.setAlignment(Qt.AlignCenter)
+        self.relay_status_label.setGeometry(0, 560, 1280, 30)
+        
+        # Relay buttons
+        self.relay_buttons = []
+        self.relay_states = [False] * 8  # Releiden tilat (False = pois, True = päällä)
+        
+        for i in range(8):
+            row = i // 4
+            col = i % 4
+            
+            # Luo relepainike
+            btn = QPushButton(f"RELE {i+1}", relay_panel)
+            btn.setGeometry(50 + col*280, 50 + row*150, 220, 100)
+            btn.setStyleSheet("""
+                QPushButton {
+                    background-color: #888888;
+                    color: white;
+                    border-radius: 10px;
+                    font-size: 18px;
+                    font-weight: bold;
+                }
+                QPushButton:pressed {
+                    background-color: #00aa00;
+                }
+            """)
+            
+            # Yhdistä napin painallus releen ohjaukseen
+            btn.clicked.connect(lambda checked, idx=i: self.toggle_relay_button(idx))
+            self.relay_buttons.append(btn)
         
         self.stacked_widget.addWidget(manual_page)
+        
+    def toggle_relay_button(self, index):
+        # Vaihda releen tila
+        self.relay_states[index] = not self.relay_states[index]
+        new_state = 1 if self.relay_states[index] else 0
+        
+        # Päivitä napin ulkoasu
+        self.relay_buttons[index].setStyleSheet("""
+            QPushButton {
+                background-color: %s;
+                color: white;
+                border-radius: 10px;
+                font-size: 18px;
+                font-weight: bold;
+            }
+        """ % ("#00aa00" if self.relay_states[index] else "#888888"))
+        
+        # Lähetä Modbus-komento
+        try:
+            relay_num = index + 1
+            success = self.modbus.toggle_relay(relay_num, new_state)
+            if success:
+                self.relay_status_label.setText(f"Rele {relay_num} {'PÄÄLLÄ' if new_state else 'POIS'}")
+            else:
+                self.relay_status_label.setText(f"Virhe releen {relay_num} ohjauksessa!")
+                # Palauta napin tila, koska komento epäonnistui
+                self.relay_states[index] = not self.relay_states[index]
+                self.relay_buttons[index].setStyleSheet("""
+                    QPushButton {
+                        background-color: %s;
+                        color: white;
+                        border-radius: 10px;
+                        font-size: 18px;
+                        font-weight: bold;
+                    }
+                """ % ("#00aa00" if self.relay_states[index] else "#888888"))
+        except Exception as e:
+            print(f"Virhe releen {index+1} ohjauksessa: {e}")
+            self.relay_status_label.setText(f"Virhe: {str(e)}")
     
     def create_modbus_page(self):
         # Modbus page
@@ -298,6 +396,11 @@ class Widget(QWidget):
         if hasattr(self, 'pressure_thread'):
             self.pressure_thread.stop()
             self.pressure_thread.wait()
+        
+        # Sulje Modbus-yhteys
+        if hasattr(self, 'modbus'):
+            self.modbus.close()
+            
         super().closeEvent(event)
 
 if __name__ == "__main__":
