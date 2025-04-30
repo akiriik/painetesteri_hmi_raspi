@@ -2,13 +2,30 @@
 import sys
 import os
 
+# ========== KOMMENTOI POIS WINDOWSISSA, PALAUTA RASPILLA ==========
 # Lisää oikea polku moduulille
-sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "mpx5700"))
+# sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "mpx5700"))
 # tai jos testi1 ja mpx5700 ovat rinnakkaiset kansiot:
 # sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "mpx5700"))
+# ===============================================================
 
+# ========== KOMMENTOI POIS WINDOWSISSA, PALAUTA RASPILLA ==========
+# from DFROBOT_MPX5700 import DFRobot_MPX5700_I2C
+# ===============================================================
 
-from DFROBOT_MPX5700 import DFRobot_MPX5700_I2C
+# ========== KÄYTÄ VAIN WINDOWSISSA, KOMMENTOI POIS RASPILLA ==========
+# Simuloitu anturi Windows-kehitystä varten
+class MockSensor:
+    def __init__(self, bus=None, addr=None):
+        pass
+        
+    def get_pressure_value_kpa(self, samples=1):
+        import random
+        return random.uniform(90, 110)  # Simuloi painelukemia välillä 90-110 kPa
+        
+    def set_mean_sample_size(self, size):
+        pass
+# ===============================================================
 
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QVBoxLayout, QHBoxLayout, QFrame, QStackedWidget
 from PyQt5.QtCore import Qt, QTimer, QThread, pyqtSignal, QSize
@@ -62,14 +79,22 @@ class Widget(QWidget):
         self.subtitle_font = QFont()
         self.subtitle_font.setPointSize(28)
         
+        # ========== KÄYTÄ VAIN WINDOWSISSA, KOMMENTOI POIS RASPILLA ==========
+        # Käytetään simuloitua anturia Windows-kehityksessä
+        self.mpx5700 = MockSensor()
+        print("Simuloitu paineanturi käytössä")
+        # ===============================================================
+        
+        # ========== KOMMENTOI POIS WINDOWSISSA, PALAUTA RASPILLA ==========
         # Alustetaan paineanturi
-        try:
-            self.mpx5700 = DFRobot_MPX5700_I2C(1, 0x16)
-            self.mpx5700.set_mean_sample_size(1)
-            print("Paineanturi alustettu onnistuneesti")
-        except Exception as e:
-            print(f"Paineanturin alustusvirhe: {e}")
-            self.mpx5700 = None
+        # try:
+        #     self.mpx5700 = DFRobot_MPX5700_I2C(1, 0x16)
+        #     self.mpx5700.set_mean_sample_size(1)
+        #     print("Paineanturi alustettu onnistuneesti")
+        # except Exception as e:
+        #     print(f"Paineanturin alustusvirhe: {e}")
+        #     self.mpx5700 = None
+        # ===============================================================
 
         # Create stacked widget for content pages
         self.stacked_widget = QStackedWidget(self)
