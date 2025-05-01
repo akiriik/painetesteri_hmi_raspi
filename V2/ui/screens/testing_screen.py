@@ -28,19 +28,23 @@ class TestingScreen(BaseScreen):
         # Page title
         self.title = self.create_title("TESTAUS")
         
-        # Create LCD display for pressure reading
-        self.pressure_lcd = QLCDNumber(self)
-        self.pressure_lcd.setDigitCount(6)
-        self.pressure_lcd.setSegmentStyle(QLCDNumber.Flat)
-        self.pressure_lcd.setStyleSheet("background-color: black; color: white;")
-        self.pressure_lcd.setGeometry(440, 200, 400, 150)
+        # Create QLabel display for pressure reading
+        self.pressure_label = QLabel("0.00", self)
+        self.pressure_label.setStyleSheet("""
+            background-color: black;
+            color: white;
+            font-family: 'Digital-7', monospace;
+            font-size: 72px;
+        """)
+        self.pressure_label.setAlignment(Qt.AlignCenter)
+        self.pressure_label.setGeometry(440, 200, 400, 150)
         
         # Pressure unit and description
-        self.pressure_label = QLabel("Ilmanpaine (kPa)", self)
-        self.pressure_label.setFont(self.subtitle_font)
-        self.pressure_label.setAlignment(Qt.AlignCenter)
-        self.pressure_label.setGeometry(0, 370, 1280, 60)
-    
+        self.info_label = QLabel("Ilmanpaine (kPa)", self)
+        self.info_label.setFont(self.subtitle_font)
+        self.info_label.setAlignment(Qt.AlignCenter)
+        self.info_label.setGeometry(0, 370, 1280, 60)
+
     def init_pressure_sensor(self):
         if DFRobot_MPX5700_I2C is not None:
             try:
@@ -50,7 +54,10 @@ class TestingScreen(BaseScreen):
                 
                 # Start pressure reading in a separate thread
                 self.pressure_thread = PressureReaderThread(self.sensor)
-                self.pressure_thread.pressureUpdated.connect(self.pressure_lcd.display)
+                # Formatoi teksti suoraan QLabel:iin
+                self.pressure_thread.pressureUpdated.connect(
+                    lambda val: self.pressure_label.setText(f"{val:.2f}")
+                )
                 self.pressure_thread.start()
             except Exception as e:
                 print(f"Paineanturin alustusvirhe: {e}")
