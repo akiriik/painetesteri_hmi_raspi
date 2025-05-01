@@ -12,10 +12,7 @@ class PressureReaderThread(QThread):
     def run(self):
         while self.running:
             try:
-                start_time = time.time()
                 pressure = self.sensor.get_pressure_value_kpa(1)
-                end_time = time.time()
-                print(f"Lukemisaika: {(end_time-start_time)*1000:.1f}ms")
                 self.pressureUpdated.emit(pressure)
             except Exception as e:
                 print(f"Virhe paineanturin lukemisessa: {e}")
