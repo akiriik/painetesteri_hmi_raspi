@@ -27,20 +27,18 @@ class MainWindow(QWidget):
             QPushButton#closeButton {
                 background-color: #F44336;
                 color: white;
-                border-radius: 15px;
+                border-radius: 25px;
                 font-weight: bold;
+                font-size: 18px;
             }
             QPushButton#closeButton:hover {
                 background-color: #D32F2F;
             }
         """)
         
-        # Luo header
-        self.create_header()
-        
         # Luo stacked widget sisältösivuille
         self.stacked_widget = QStackedWidget(self)
-        self.stacked_widget.setGeometry(0, 50, 1280, 600)
+        self.stacked_widget.setGeometry(0, 0, 1280, 650)
         
         # Luo näytöt
         self.screens = [
@@ -62,30 +60,14 @@ class MainWindow(QWidget):
         # Yhdistä navigointisignaalit
         self.navbar.screen_changed.connect(self.change_screen)
         
-        # Luo sulje-nappi
+        # Luo sulje-nappi (vasemmassa yläkulmassa, suurempi koko)
         self.close_btn = QPushButton("X", self)
         self.close_btn.setObjectName("closeButton")
-        self.close_btn.setGeometry(1240, 10, 30, 30)
+        self.close_btn.setGeometry(20, 20, 50, 50)
         self.close_btn.clicked.connect(self.close)
         
         # Nykyinen sivu
         self.current_index = 0
-    
-    def create_header(self):
-        # Header-palkki
-        self.header = QFrame(self)
-        self.header.setGeometry(0, 0, 1280, 50)
-        self.header.setStyleSheet("background-color: #FFFFFF; border-bottom: 1px solid #E0E0E0;")
-        
-        # Otsikko
-        header_font = QFont()
-        header_font.setPointSize(14)
-        header_font.setBold(True)
-        
-        self.header_title = QLabel("PAINETESTAUSJÄRJESTELMÄ v2.0", self.header)
-        self.header_title.setFont(header_font)
-        self.header_title.setGeometry(20, 0, 500, 50)
-        self.header_title.setStyleSheet("color: #2196F3;")
     
     def keyPressEvent(self, event: QKeyEvent):
         if event.key() == Qt.Key_Escape:
@@ -96,6 +78,12 @@ class MainWindow(QWidget):
         # Yksinkertaistettu näytön vaihto ilman animaatiota
         self.stacked_widget.setCurrentIndex(index)
         self.current_index = index
+        
+        # Näytä tai piilota sulje-nappi riippuen sivusta
+        if index == 0:  # Etusivu
+            self.close_btn.show()
+        else:
+            self.close_btn.hide()
     
     def show(self):
         # Käynnistä kokoruututilassa
