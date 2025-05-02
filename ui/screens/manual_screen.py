@@ -5,9 +5,8 @@ from ui.screens.base_screen import BaseScreen
 from utils.modbus_handler import ModbusHandler
 
 class ManualScreen(BaseScreen):
-    def __init__(self, parent=None):
-        # Alusta Modbus-käsittelijä
-        self.modbus = ModbusHandler(port='/dev/ttyUSB0', baudrate=19200)
+    def __init__(self, parent=None, modbus=None):
+        self.modbus = modbus  # Käytä annettua modbus-käsittelijää
         self.relay_buttons = []
         self.relay_states = [False] * 8  # Releiden tilat (False = pois, True = päällä)
         super().__init__(parent)

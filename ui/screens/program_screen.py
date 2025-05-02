@@ -15,16 +15,33 @@ import threading
 
 class ProgramListDialog(QDialog):
     """Ohjelmalistan valintaikkuna"""
-    
-    def __init__(self, parent=None, program_names=None, current_index=0):
+    # ProgramScreen-luokan konstruktori
+    def __init__(self, parent=None, modbus=None):
+        self.program_names = []
+        self.program_names_loaded = False
+        self.consecutive_failures = 0
+        
+        # Käytä annettua Modbus-käsittelijää
+        self.modbus = modbus or ModbusHandler(port='/dev/ttyUSB0', baudrate=19200)
+        
+        # ForTest manuaalin mukaiset rekisterit
+        self.PROGRAM_SELECT_REGISTER = 0x0060
+        self.PROGRAM_NAME_BASE_ADDR = 0xEA74
+        
+        # Tallennetut ohjelmatiedot
+        self.program_selection = {
+            "program1": 1,
+            "program2": 2,
+            "program3": 3,
+            "program2_enabled": True,
+            "program3_enabled": True,
+            "program1_name": "Ohjelma 1",
+            "program2_name": "Ohjelma 2",
+            "program3_name": "Ohjelma 3"
+        }
+        
         super().__init__(parent)
-        self.setWindowTitle("Valitse ohjelma")
-        self.setFixedSize(300, 400)
-        self.setStyleSheet("background-color: white;")
-        
-        self.selected_program = None
-        self.selected_index = -1
-        
+
         # Asettelu
         layout = QVBoxLayout(self)
         
@@ -216,13 +233,13 @@ class ProgramPanel(QFrame):
 class ProgramScreen(BaseScreen):
     """Ohjelmasivu ohjelmien valintaan"""
     
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, modbus=None):
         self.program_names = []
         self.program_names_loaded = False
         self.consecutive_failures = 0
         
-        # Modbus-käsittelijä
-        self.modbus = ModbusHandler(port='/dev/ttyUSB0', baudrate=19200)
+        # Use provided ModbusHandler or create a new one
+        self.modbus = modbus or ModbusHandler(port='/dev/ttyUSB0', baudrate=19200)
         
         # ForTest manuaalin mukaiset rekisterit
         self.PROGRAM_SELECT_REGISTER = 0x0060  # Ohjelman valintarekisteri

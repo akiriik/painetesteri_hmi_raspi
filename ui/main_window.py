@@ -36,17 +36,21 @@ class MainWindow(QWidget):
             }
         """)
         
+        # Luo Modbus-käsittelijä
+        from utils.modbus_handler import ModbusHandler
+        self.modbus = ModbusHandler(port='/dev/ttyUSB0', baudrate=19200)
+        
         # Luo stacked widget sisältösivuille
         self.stacked_widget = QStackedWidget(self)
         self.stacked_widget.setGeometry(0, 0, 1280, 650)
         
         # Luo näytöt
         self.screens = [
-            HomeScreen(self),
-            ProgramScreen(self),
-            TestingScreen(self),
-            ManualScreen(self),
-            ModbusScreen(self)
+        HomeScreen(self),
+        ProgramScreen(self, self.modbus),
+        TestingScreen(self, self.modbus),
+        ManualScreen(self, self.modbus),
+        ModbusScreen(self, self.modbus)
         ]
         
         # Lisää näytöt stacked widgetiin
@@ -88,7 +92,7 @@ class MainWindow(QWidget):
     def show(self):
         # Käynnistä kokoruututilassa
         self.showFullScreen()
-    
+
     def closeEvent(self, event):
         # Siivoa kaikki näytöt ennen sulkemista
         for screen in self.screens:
