@@ -11,7 +11,7 @@ class ManualScreen(BaseScreen):
         self.relay_buttons = []
         self.relay_states = [False] * 8  # Releiden tilat (False = pois, True = päällä)
         super().__init__(parent)
-    
+        
     def init_ui(self):
         # Page title
         self.title = self.create_title("KÄSIKÄYTTÖ")
