@@ -167,15 +167,14 @@ class TestingScreen(BaseScreen):
             return
             
         try:
-            # Käytä Write Single Coil -komentoa rekisteriin 0x0A (10)
-            # ForTest manuaalin mukaan start rekisteri on 0x0A ja arvo 0xFF00
-            result = self.modbus.client.write_coil(0x0A, True, slave=1)
+            # Päivitetty pymodbus 3.9.2 -syntaksille: käytä handler-luokan metodia
+            result = self.modbus.write_coil(0x0A, True)
             
-            if not result.isError():
+            if result:
                 self.result_label.setText("Testi käynnistetty")
                 self.test_running = True
             else:
-                self.result_label.setText(f"Virhe testin käynnistyksessä: {result}")
+                self.result_label.setText("Virhe testin käynnistyksessä")
         except Exception as e:
             self.result_label.setText(f"Virhe: {str(e)}")
     
@@ -186,15 +185,14 @@ class TestingScreen(BaseScreen):
             return
             
         try:
-            # Käytä Write Single Coil -komentoa rekisteriin 0x14 (20)
-            # ForTest manuaalin mukaan stop rekisteri on 0x14 ja arvo 0xFF00
-            result = self.modbus.client.write_coil(0x14, True, slave=1)
+            # Päivitetty pymodbus 3.9.2 -syntaksille: käytä handler-luokan metodia
+            result = self.modbus.write_coil(0x14, True)
             
-            if not result.isError():
+            if result:
                 self.result_label.setText("Testi pysäytetty")
                 self.test_running = False
             else:
-                self.result_label.setText(f"Virhe testin pysäytyksessä: {result}")
+                self.result_label.setText("Virhe testin pysäytyksessä")
         except Exception as e:
             self.result_label.setText(f"Virhe: {str(e)}")
     
@@ -204,11 +202,10 @@ class TestingScreen(BaseScreen):
             return
             
         try:
-            # Lue tila rekisteristä 0x30
-            status_result = self.modbus.client.read_holding_registers(0x30, 10)
-
+            # Päivitetty pymodbus 3.9.2 -syntaksille: käytä handler-luokan metodia
+            status_result = self.modbus.read_holding_registers(0x30, 10)
             
-            if not status_result.isError():
+            if status_result and not hasattr(status_result, 'isError'):
                 status_value = status_result.registers[0]
                 
                 # Tilan tulkinta rekisteristä (0 = odottaa, 1 = testi käynnissä, jne.)
@@ -227,9 +224,9 @@ class TestingScreen(BaseScreen):
                 # Jos testi ei ole käynnissä, tarkista onko tulos saatavilla
                 if not self.test_running:
                     # Lue tulos rekisteristä 0x40
-                    result_regs = self.modbus.client.read_holding_registers(0x40, 40, slave=1)
+                    result_regs = self.modbus.read_holding_registers(0x40, 40)
                     
-                    if not result_regs.isError() and result_regs.registers[0] != 0:
+                    if result_regs and result_regs.registers[0] != 0:
                         # Tuloksen tulkinta (19 = tulos OK, muut arvot ovat eri virheitä)
                         result_value = result_regs.registers[18]  # Rekisteri 0x40 + 18 = tuloksen tieto
                         
