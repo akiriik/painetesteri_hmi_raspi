@@ -205,7 +205,8 @@ class TestingScreen(BaseScreen):
             
         try:
             # Lue tila rekisteristä 0x30
-            status_result = self.modbus.client.read_holding_registers(0x30, 10, slave=1)
+            status_result = self.modbus.client.read_holding_registers(0x30, 10)
+
             
             if not status_result.isError():
                 status_value = status_result.registers[0]
